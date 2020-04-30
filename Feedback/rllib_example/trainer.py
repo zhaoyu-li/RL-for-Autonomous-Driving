@@ -1,8 +1,6 @@
 import os
-import multiprocessing
 import random
 import argparse
-import logging
 
 import numpy as np
 from ray import tune
@@ -151,10 +149,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("rllib-example")
     parser.add_argument(
-        "--headless",
-        default=False,
-        help="run simulation in headless mode",
-        action="store_true",
+        "--headless", help="run simulation in headless mode", action="store_true",
     )
     parser.add_argument(
         "--num_samples",

@@ -72,6 +72,19 @@ Useful if you are just testing out a map but otherwise should not be used:
 
 It is not recommended to use any of the other preset options.
 
+To custom your agent interface and use the information you need, you can create agent_interface like below:
+```python
+agent_interface = AgentInterface(
+    max_episode_steps=1000,
+    waypoints=True,
+    neighborhood_vehicles=True,
+    ogm=True,
+    rgb=True,
+    lidar=False,
+    action=ActionSpaceType.Continuous,
+)
+```
+
 
 ## Policy
 
@@ -149,6 +162,7 @@ If available it can be generated using the following call:
   python3 dataset_public/2lane_sharp_bwd/scenario.py
 ```
 
+You can edit your own map through [sumo NETEDIT](https://sumo.dlr.de/docs/NETEDIT.html) and export a map.net.xml format.
 And if you have an additional file you wish to turn into a map you can use the conversion utilities like:
 
 ```bash

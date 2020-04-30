@@ -19,7 +19,6 @@ def main():
             "seed": 42,
             "scenarios": [scenario_path],
             "agents": {AGENT_ID: agent},
-            "envision": True,
             "headless": False,
             "visdom": False,
         }
