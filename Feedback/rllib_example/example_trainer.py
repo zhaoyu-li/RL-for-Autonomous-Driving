@@ -51,35 +51,7 @@ def on_episode_end(info):
     )
 
 
-def explore(config):
-    # ensure we collect enough timesteps to do sgd
-    if config["train_batch_size"] < config["sgd_minibatch_size"] * 2:
-        config["train_batch_size"] = config["sgd_minibatch_size"] * 2
-    # ensure we run at least one sgd iter
-    if config["num_sgd_iter"] < 1:
-        config["num_sgd_iter"] = 1
-    return config
-
-
 def main(args):
-    pbt = PopulationBasedTraining(
-        time_attr="time_total_s",
-        metric="episode_reward_mean",
-        mode="max",
-        perturbation_interval=300,
-        resample_probability=0.25,
-        # Specifies the mutations of these hyperparams
-        hyperparam_mutations={
-            "lambda": lambda: random.uniform(0.9, 1.0),
-            "clip_param": lambda: random.uniform(0.01, 0.5),
-            "lr": [1e-3, 5e-4, 1e-4, 5e-5, 1e-5],
-            "num_sgd_iter": lambda: random.randint(1, 30),
-            "sgd_minibatch_size": lambda: random.randint(128, 16384),
-            "train_batch_size": lambda: random.randint(2000, 160000),
-        },
-        custom_explore_fn=explore,
-    )
-
     # XXX: There is a bug in Ray where we can only export a trained model if
     #      the policy it's attached to is named 'default_policy'.
     #      See: https://github.com/ray-project/ray/issues/5339
@@ -109,9 +81,16 @@ def main(args):
             "on_episode_step": on_episode_step,
             "on_episode_end": on_episode_end,
         },
+        "horizon": args.horizon,
+        "lr": 1e-4,
+        "num_sgd_iter": 10,
+        "lambda": 0.95,
+        "clip_param": 0.2,
+        "sgd_minibatch_size": 1024,
+        "train_batch_size": 10240 * 3,
     }
 
-    experiment_name = "rllib_example_multi"
+    experiment_name = "rllib_example"
     log_dir = os.path.expanduser("~/ray_results")
 
     result_dir = args.result_dir
@@ -121,19 +100,18 @@ def main(args):
 
     print(f"Checkpointing at {log_dir}")
     analysis = tune.run(
-        "PG",
+        "PPO",
         name=experiment_name,
-        stop={"time_total_s": 1 * 60 * 60},  # 1 hour
-        checkpoint_freq=1,
+        stop={"time_total_s": 6 * 60 * 60},  # 6 hour
+        checkpoint_freq=5,
         checkpoint_at_end=True,
         local_dir=log_dir,
         resume=args.resume_training,
         restore=checkpoint,
-        max_failures=0,
+        max_failures=1000,
         num_samples=args.num_samples,
         export_formats=["model", "checkpoint"],
         config=tune_config,
-        scheduler=pbt,
     )
 
     print(analysis.dataframe().head())
@@ -169,6 +147,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--num_workers", type=int, default=4, help="Number of workers used to sample"
     )
+    parser.add_argument("--horizon", type=int, default=1000, help="max episode len")
     parser.add_argument(
         "--resume_training",
         default=False,

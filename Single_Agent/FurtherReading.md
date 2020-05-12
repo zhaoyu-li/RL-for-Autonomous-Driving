@@ -72,8 +72,11 @@ Useful if you are just testing out a map but otherwise should not be used:
 
 It is not recommended to use any of the other preset options.
 
-To custom your agent interface and use the information you need, you can create agent_interface like below:
+To custom your agent interface and use the information you need, you can create an `agent_interface` like below:
 ```python
+from smarts.core.agent_interface import AgentInterface
+from smarts.core.controllers import ActionSpaceType
+
 agent_interface = AgentInterface(
     max_episode_steps=1000,
     waypoints=True,

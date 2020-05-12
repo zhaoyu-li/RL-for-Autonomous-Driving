@@ -1,6 +1,6 @@
 ## Setup
 
-To setup the simulator (called SMARTS) run the following commands,
+To setup the simulator, which is called SMARTS, run the following commands,
 
 ```bash
 # unzip the starter_kit and place somewhere convenient on your machine. (e.x. ~/src/starter_kit)
@@ -32,7 +32,7 @@ python random_example/run.py
 ### Common Questions
 1. Exception: Could not open window.
 
-This is may be due to some old dependencies of panda3D. Try following instructions to solve it.
+This may be due to some old dependencies of Panda3D. Try the following instructions to solve it.
 ```bash
 # set DISPLAY 
 vim ~/.bashrc

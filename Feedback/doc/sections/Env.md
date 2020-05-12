@@ -69,7 +69,23 @@ training on multi-cores.
 
 #### Scenario Iterator
 If a path to a folder that contains multiple scenarios is passed through the `Env` config, then SMARTS will automatically cycle these
-scenarios. Specifically, the next scenario will be automatically loaded after each call to `env.reset()`. This is especially useful for
+scenarios.
+```python
+# train each worker with different environmental setting
+tracks_dir = [scenario1, scenario2, ...]
+
+tune_config = {
+    "env": RLlibHiwayEnv,
+    "env_config": {
+        "seed": tune.randint(1000),
+        "scenarios": tracks_dir,
+        "headless": args.headless,
+        "agents": agents,
+    },
+    ...
+  }
+```
+Specifically, the next scenario will be automatically loaded after each call to `env.reset()`. This is especially useful for
 training on multiple maps. Also if there are **n** routes file in `scenario1/traffic` dir, then each routes file will be combined with
 the shared map to form a scenario, leading to a total of **n** concrete scenarios (traffic-map combination) that SMARTS automatically
 swaps through for just `scenario1`. See `smarts/core/scenario.py` for implementation details.

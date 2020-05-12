@@ -12,6 +12,8 @@ class Policy(AgentPolicy):
 
 
 agent = Agent(
-    interface=AgentInterface.from_type(AgentType.Standard, max_episode_steps=2000),
+    interface=AgentInterface.from_type(
+        AgentType.StandardWithAbsoluteSteering, max_episode_steps=2000
+    ),
     policy=Policy(),
 )

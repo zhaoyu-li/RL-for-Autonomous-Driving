@@ -74,7 +74,9 @@ class ModelPolicy(AgentPolicy):
 model_path = Path(__file__).parent / "model"
 
 agent = Agent(
-    interface=AgentInterface.from_type(AgentType.Standard, max_episode_steps=1000),
+    interface=AgentInterface.from_type(
+        AgentType.StandardWithAbsoluteSteering, max_episode_steps=1000
+    ),
     policy=ModelPolicy(str(model_path.absolute()), OBSERVATION_SPACE,),
     observation_space=OBSERVATION_SPACE,
     action_space=ACTION_SPACE,

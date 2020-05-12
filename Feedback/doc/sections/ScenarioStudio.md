@@ -7,14 +7,16 @@ If you have access to `sstudio` you can use it to generate traffic with differen
 ```python
 traffic_actor = TrafficActor(name="car", speed=Distribution(sigma=0.2, mean=0.8),)
 
+# add 10 social vehicles with random routes.
 traffic = Traffic(
     flows=[
-        Flow(route=RandomRoute(), rate=180, actors={traffic_actor: 1},)  # 3 / minute
+        # generate flows last for 10 hours
+        Flow(route=RandomRoute(), begin=0, end=10 * 60 * 60, rate=25, actors={traffic_actor: 1},)
         for i in range(10)
     ]
 )
 
-gen_traffic(scenario=scenario, traffic=traffic, name="all", seed=seed_, output_dir=output_dir)
+gen_traffic(scenario_path, traffic, name="all", output_dir=scenario_path, seed=seed_, overwrite=True)
 ```
 `traffic_actor` is used as a spec for traffic actors (e.g. Vehicles, Pedestrians, etc). The defaults provided are for a car.
 You can specify acceleration, deceleration, speed distribution, imperfection distribution and other configs for social cars.
@@ -32,6 +34,10 @@ We just run a `scenario.py` file as a regular Python script to generate scenario
 ```bash
   python3 scenario/scenario.py
 ```
+
+IMPORTANT: if you want to train model on one scenario, remember to set the `end` time of flow larger or equal to your expected
+training time, since the smarts will continue the flow after each `reset` called. However, if there are multi scenarios to train
+for one worker, you can relax this restriction since after the scenario change, the flow will also be reset to the beginning time.
 
 ### Generate missions
 The Scenario Studio of SMARTS also allows generation of *missions* for ego agents and social agents. These missions are similar
