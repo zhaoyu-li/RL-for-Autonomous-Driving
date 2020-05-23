@@ -27,7 +27,7 @@ is a Python `namedtuple` with the following fields,
     * `lane_index` - index of the lane under this vehicle, right most lane has index 0 and the index increments to the left
 * `top_down_rgb` - A 256x256 RGB image with the ego vehicle at the center
     ![](../assets/rgb.png)
-* `occupancy_grid_map` - A 64x64 [OGM](https://en.wikipedia.org/wiki/Occupancy_grid_mapping) around the ego vehicle
+* `occupancy_grid_map` - A 256x256 [OGM](https://en.wikipedia.org/wiki/Occupancy_grid_mapping) around the ego vehicle
 * `waypoint_paths` - A list of waypoints in front of the ego vehicle showing the potential routes ahead. Each item is a `Waypoint` instance with the following fields,
     * `id` - an integer identifier for this waypoint
     * `pos` - a numpy array (x, y) center point along the lane

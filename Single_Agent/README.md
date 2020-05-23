@@ -1,70 +1,69 @@
 # Starter Kit
 
-## SMARTS for Teaching
+[[_TOC_]]
 
-Scalable Multi-Agent RL Training School (SMARTS) is an autonomous driving platform for RL.
+## 1. Introduction 
 
-This starter kit is here to get you going to submit solutions to the SMARTS challenge on CodaLab. The following instructions include simulator setup, solution examples, scenario details, submission process, and how to see your leaderboard score.
+Scalable Multi-Agent RL Training School (**SMARTS**) is an autonomous driving platform for RL.
 
-There is further reading in [FurtherReading.md](FurtherReading.md)
+This starter kit helps you set up the develop environment, get familiar with SMARTS, write your RL training algorithms, monitor
+your training process, evaluate your training results, and submit solutions to the SMARTS challenge on CodaLab. 
 
-## Setup
+## 2. Setup
 
-To setup the simulator (called SMARTS) run the following commands,
+To setup SMARTS to run simulations, see the commands in [Setup](doc/sections/Setup.md).
 
-```bash
-# unzip the starter_kit and place somewhere convenient on your machine. (e.x. ~/src/starter_kit)
 
-cd ~/src/starter_kit
-./install_deps.sh
-# ...and, follow any on-screen instructions
+## 3. About SMARTS
 
-# test that the sumo installation worked
-sumo-gui
+SMARTS supports fast and flexible construction of RL environments and flexible scripting of training scenarios in Python.
 
-# setup virtual environment (Python 3.7 is required)
-python3.7 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
+### 3.1 Environment
+SMARTS provide two kinds of training environments, one is `HiwayEnv` following the convention of [Open AI Gym](https://gym.openai.com/) and another is `RLlibHiwayEnv` customized for [RLlib](https://docs.ray.io/en/master/rllib.html) training.
+To learn about these environments, see [SMARTS Env](doc/sections/Env.md).
 
-# install the dependencies
-pip install smarts-0.3.2b-py3-none-any.whl
-pip install smarts-0.3.2b-py3-none-any.whl[train]
+### 3.2 Scenario Studio
+Scenario Studio is a flexible tool to help you generate different traffics in a scenario. You use the Scenario Studio to add social vehicles with 
+different attributes, generate routes file for social vehicles and missions file for agents relatively.
+See [Scenario Studio](sections/Sstudio.md) for details.
 
-# download the public datasets from Codalab to ./dataset_public
+![](doc/assets/envision_video.gif)
 
-# test that the sim works
-python random_example/run.py
-```
 
-## Visualization
+## 4. Build your first training program 
 
-SMARTS includes a visualizer called Envision that runs on a separate process. To manage these processes we use supervisord (ships with SMARTS as a pip dependency). Supervisord knows what processes to run by reading a `supervisord.conf` file which is included with your Starter Kit. Instead of running `python random_example/run.py` directly, simply call,
+### 4.1 Prepare the RL env
 
-```bash
-supervisord
-```
+#### 4.1.1 Customize your map through Scenario Studio
+We have provided some public scenarios in dataset_public.
 
-The `supervisord.conf` file contains,
+To add social vehicles and assign different attributes to them, you can refer to [Scenario Studio](sections/Sstudio.md) session. 
+An example named `scenario/scenario.py` have been provided to you.
 
-```bash
-# [program:smarts]
-# command=python random_example/run.py
-# ...
-# [program:envision_server]
-# command=python envision/server.py --scenarios ./dataset_public --port 8081
-# ...
-```
+To improve the generalizability of your trained models to new maps, you may want to consdier creating your own maps and use them with SMARTS for training. See [Scenario Studio](sections/Sstudio.md) for more. 
 
-Change the above commands as necessary (the first to specify the command to run for SMARTS, and the latter to adjust where the scenarios are pointed to on your machine so Envision can load them).
+#### 4.1.2 Create the RL environment 
+As mentioned before in [SMARTS Env](doc/sections/Env.md), SMARTS provide two types of `Env` Class. `RLlibHiwayEnv` is designed for RLlib framework, which is 
+efficient and scalable but somewhat complex. For participants who do not want to use RLlib, you can use `HiwayEnv` to run your simulations. Whereas `HiwayEnv`
+follows the `gym.env` style, `RLlibHiwayEnv` inherits from `RLlib.env.MultiAgentEnv`.
 
-To see the front-end visualization visit `http://localhost:2310/` in your browser. Select the simulator instance in the top left dropdown. If you are using SMARTS on a remote machine you will need to port forward 2310 and 8081.
+### 4.2 Create agents
+The `Agent` class is the interface between user code and a SMARTS environment. In `Agent`, you can specify the `AgentInterface` parameters to set the
+observation information you need and the `ActionType`.
 
-## Solution Examples
+Also, you can create and use `adapters` to wrap interaction between an agent model and a SMARTS environment. Thesea adapters can transform observations from a SMARTS environment before using them as input to your model or transform your model's output before sending them as actions to SMARTS environment. See `rllib_example/agent.py`
+ for an example. 
 
-We provide two solution examples to get your started with experimenting. “Random” is a random agent policy to demonstrate what the most minimal solution would be. “RLlib” demonstrates a complete solution using [RLlib](https://ray.readthedocs.io/en/latest/rllib.html) to train a policy using [PPO](https://openai.com/blog/openai-baselines-ppo/).
+See [Agent](doc/sections/Agent.md) for more detail.
 
-### Random
+
+### 4.3 Create policy and begin training
+
+We provide two examples to get your started with experimenting. “Random” is a random agent policy to demonstrate 
+what the most minimal solution could be and it uses `HiwayEnv`. “RLlib” demonstrates a complete solution using [RLlib](https://ray.readthedocs.io/en/latest/rllib.html) 
+to train a policy using [PPO](https://openai.com/blog/openai-baselines-ppo/) and it uses `RLlibHiwayEnv`.
+
+#### 4.3.1 Random Example
 
 To run the random agent,
 
@@ -80,46 +79,114 @@ simulation ended
 Accumulated reward: 11.999999999999993
 ```
 
-If you open up the `run.py` script you can edit the scenario (see ”The Scenario > Dataset” section below) for all the available ones. You can update the number of social vehicles through the` Scenario Studio (sstudio)`, max step length through `AgentInterface`, and the seed through `env config`. These will all be useful later when you train your own agent. You can also toggle headless mode, and `visdom` visualization (see “Appendix > Visualization” section below).
+To use the SMARTS simulation for training, you can just create an instance of `HiwayEnv` as how you would create a normal Gym env and continue with your training.
 
-### RLlib
+#### 4.3.2 RLlib example
 
-Bundled in the starter kit is a more sophisticated example demoing how to use the (RLib)[https://ray.readthedocs.io/en/latest/rllib.html] framework to train an agent.
+Bundled in the starter kit is a more sophisticated example demonstrating how to use the [RLib](https://ray.readthedocs.io/en/latest/rllib.html) framework to train an agent.
+**Refer** to [RLlib](doc/sections/RLlib.md) session for quick start and some tips.
 
 RLlib supports both TensorFlow and PyTorch. It provides features for easily setting up and running experiments across many distributed nodes or across all CPU’s on a single node.
 
-The RLlib example is composed of up into 3 files, the `agent.py`, `trainer.py` and `run.py` and a `model` directory.
+The RLlib example consists of 3 files, the `agent.py`, `trainer.py` and `run.py`, and a `model` directory.
 
-* `agent.py` defines the,
-    * observation/reward/action shaping functions
-    * the model architecture
-    * and some code to build a Policy class that we can use for evaluating the trained model
-* `trainer.py` demonstrates how to setup an RLlib experiment
-* `run.py` will use the Policy class defined in agent.py to evaluate the trained model
-* `gen_social_vehicle.py` show examples to add social vehicles with different behaviors through scenario studio. Go to [FurtherReading.md](FurtherReading.md)  to see more sstudio examples.
-* `model/` contains a pre-trained network that was generated by trainer.py
+* `agent.py` defines
+    * the observation/reward/action adapter functions,
+    * the model architecture,
+    * and some code to build a Policy class that we can use for evaluating the trained model.
+* `example_trainer.py` demonstrates how to setup an RLlib experiment and train a RL agent with example hyperparameter.
+* `pbt_trainer.py` demonstrates how to setup an RLlib experiment and use pbt algorithm to train a RL agent.
+* `run.py` uses the Policy class defined in agent.py to evaluate the trained model.
+* `model/` contains a pre-trained network that was generated by pbt_trainer.py.
 
-To train a new model, first backup the current model in rllib_example/model and run:
+To train a new model, first backup the current model in rllib_example/model and then run:
+
 ```bash
 python3 ~/src/starter_kit/rllib_example/trainer.py ~/src/dataset_public/3lane
 # replace 3lane with the scenario to train against
 ```
+
 This will train a new model and output it to the rllib_example/model/ directory.
 
-The trainer script has a few options to assist with training
-```bash
---headless  # runs the simulator in headless mode
---resume_training # resumes the previously started experiment
-```
-NOTE: `--resume_training` will continue to use the same configuration as was set in the original experiment.
-To make changes to a started experimented, you can edit the latest experiment file in `~/ray_results/rllib_example` or use the checkpointing feature in RLLib to start a new experiment using a checkpointed model.
+
+### 4.4 Evaluate a model
+
+#### 4.4.1 Random Example
+
+Similar to mentioned before, see `random_example/run.py` for more details.
+
+#### 4.4.2 Rllib example
 
 To evaluate a model:
 ```bash
 Python3 ~/src/starter_kit/rllib_example/run.py
 ```
-Building Your Own Policies
-Building on top of the previous examples, or starting from scratch you can create your own policies by implementing the `Policy` interface. The `run.py` script (like in the previous examples), and CodaLab evaluation import agent using this policy class. The interface is simple,
+
+
+### 4.5 visualization
+
+To monitor your training performance and some metrics, RLlib tensorboard log is by default stored at `/home/ray_results`.
+Try command:
+```bash
+tensorboard --logdir /home/ray_results
+```
+
+To see simulation rendering, refer to [Visualization](doc/sections/Visualization.md) for details.
+
+
+## 5. Codalab Datasets and Submission
+
+### 5.1 Datasets
+
+Alongside the starter kit a public dataset is available on CodaLab. It’s up to you how to split this dataset up for training, testing, etc. Some or all of the following scenarios may be provided,
+
+`3lane` will be provided in-built in the starter kit
+
+* `1lane` - the simplest scenario, a one-lane loop
+* `1lane_sharp` - a one-lane loop, with sharp curves
+* `2lane_bwd` - a two-lane loop going backwards
+* `2lane_sharp` - a two-lane loop with sharp curves
+* `3lane` - a simple three-lane loop
+* `3lane_bwd_b` - a simple three-lane loop going backwards with a different shape than `3lane`
+* `3lane_sharp` - a three-lane loop with sharp curves
+* `3lane_sharp_bwd_b` - a three-lane loop with sharp curves, going backwards, and a different shape than `3lane-sharp`
+
+In addition to these scenarios, you can set the max step length and the random number generator seed in the `run.py` script. These settings could also be important for your experiments. You will want to consider using many episodes to continue training for longer periods of time. By default, the environment returns `done` when the agent is off road, gets into an accident, or hits the max step length and ends an episode.
+
+All these settings together allow you to build larger and more varied setups to give your agent adequate learning experience for better performance.
+
+
+
+### 5.2 Submission
+
+When you submit your solution we will put it through an automated evaluation similar to your local `run.py script`. However we’ll be evaluating it across a different set of scenarios with different maps and varying numbers of social vehicles. We also run with different seed, max step count, and episode count.
+
+When you’re happy with your solution and ready to submit to CodaLab for evaluation, you zip your policy (and any associated files) and upload to CodaLab under “Participate > Submit/View Files”. Important: zip together just the files, not a directory with the files in it. Be careful to make sure your solutions run locally, and perform well before submitting as the upload limit is fixed.
+
+Your example submission zip dir structure can be like this:
+```python
+- agent.py # defines agent so that codalab evaluation will import like from agent import agent
+- model/ # stores training model so that policy class in agent.py will restore from it.
+```
+
+The evaluation programm will act like below way:
+```python
+from agent import agent
+agent.policy.setup()
+
+...
+observation = observations[agent_id]
+actions = {agent_id: agent.act(observation)}
+observations, rewards, done, _ = env.step(actions)
+...
+
+agent.policy.teardown()
+```
+
+Therefore in your agent class need to have the fields and methods mentioned before.
+
+Building on top of the previous examples, or starting from scratch you can create your own policies by implementing the 
+`Policy` interface.
 
 ```python
 class Policy():
@@ -131,181 +198,25 @@ class Policy():
 
     def act(self, observation):
         # takes an observation, and returns an action
-```
-
-See the following sections on what the space of the observation input looks like, the action space your response must be in, and the reward shaping functionality available to you.
-[OpenAI Gym](https://gym.openai.com/) Environment Configuration Options
-The simulation can be configured through the config dictionary passed to the gym.make call
-
-```python
-env = gym.make(
-        "smarts.env:hiway-v0", # env entry name
-        scenarios=[scenario_path], # scenarios list
-        agents={AGENT_ID: agent}, # agents
-        headless=False, # disable gui.
-        visdom=False, # whether or not to enable visdom visualization (see Appendix).
-        seed=42, # RNG Seed, seeds are set at the start of simulation, and never automatically re-seeded.
-    )
-
-```
-RLlib training use RLlibHiwayEnv inheriting MultiAgentEnv defined by RLlib. For evaluation, you can use both HiwayEnv and RLlibHiWayEnv (no difference here), see different `run.py` in random_example and rllib_example.
-Our codalab evalution is using HiwayEnv.
-```python
-env = RLlibHiWayEnv(
-        config={
-            "seed": 42,
-            "scenarios": [scenario_path],
-            "agents": {AGENT_ID: agent},
-            "headless": False,
-            "visdom": False,
-        }
-    )
-```
-
-## Observation Space
-
-The raw observation space is a Python `namedtuple` with the following fields,
-* `events` a `namedtuple` with the following fields,
-    * `collisions` - Information about how the vehicle has run into another vehicle(if at all)
-    * `off_road` - `True` if the vehicle is off the road
-    * `reached_goal` - `True` if the vehicle has reached its goal
-    * `reached_max_episode_steps` - `True` if the vehicle has reached its max episode steps
-* `ego_vehicle_state` - a `VehicleState` `namedtuple` with the following fields,
-    * `heading` - vehicle heading in degrees
-    * `speed` - agent speed in km/h
-    * `throttle` - a normalized engine force value
-    * `brake` - a normalized brake force value
-    * `steering` - wheel angle (Deg)
-    * `position` - 3D numpy array (x, y, z) of vehicle
-    * `bounding_box` - `BoundingBox` `namedtuple` for the `width`, `length`, `height`
-* `neighborhood_vehicle_states` - a list of `SocialVehicleState` `namedtuple`s, each with the following fields,
-    * `heading`, `speed`, `position`, `bounding_box` - same as with the `ego_vehicle_state`
-    * `lane_id` - a global unique identifier of the lane under this waypoint
-    * `lane_index` - index of the lane under this waypoint, right most lane has index 0 and the index increments to the left
-* `top_down_rgb` - A 256x256 RGB image following the ego vehicle
-* `occupancy_grid_map` - A 64x64 [OGM](https://en.wikipedia.org/wiki/Occupancy_grid_mapping) map following around the ego vehicle
-* `waypoint_paths` - A list of waypoints in front of the ego vehicle showing the potential routes ahead. Each item is a `Waypoint` instance with the following fields,
-    * `id` - an integer identifier for this waypoint
-    * `pos` - a numpy array (x, y) center point along the lane
-    * `heading` - heading angle of lane at this point (degrees)
-    * `lane_width` - width of lane at this point (meters)
-    * `speed_limit` - lane speed in km/h
-    * `lane_id` - a global unique identifier of lane under waypoint
-    * `right_of_way` - `True` if this waypoint has right of way, `False` otherwise
-    * `lane_index` - index of the lane under this waypoint, right most lane has index 0 and the index increments to the left
-
-## Action Space
-
-The action space is a tuple of `throttle` [0, 1], `brake` [0, 1], and `steering_rate` [-1, 1].
-
-## Shaping
-
-Frameworks like RLlib want to control the running of the OpenAI gym environment. The framework does not leave space between the environment and your model to make your necessary mappings between the Gym Env observations and actions and the model’s input/outputs.
-
-A concrete example of this in action is the `rllib_example/agent.py` file in this starter_kit.
-
-The shaping functions or adapters are passed into the Agent as necessary configuration options
-
-```python
-# This action space should match the input to the action(..) function below.
-ACTION_SPACE = gym.spaces.Box(low=-1.0, high=1.0, shape=(1,))
-
-# This observation space should match the output of observation(..) function below
-OBSERVATION_SPACE = gym.spaces.Dict({
-    'angle_error': gym.spaces.Box(low=-180, high=180, shape=(1,)),
-})
 
 
-def observation_adapter(env_obs):
-    # Transform the environment's observation into OBSERVATION_SPACE
-    ...
-    return {'angle_error': np.array([angle_error])}
+model_path = Path(__file__).parent / "model"
 
-def reward_adapter(env_obs, env_reward):
-    # perform any reward shaping you would like in here
-    ...
-    return reward
-
-def action_adapter(model_action):
-    # convert the model’s output (ACTION_SPACE) into the environments action space
-    return model_action
-
-# Now pass the these shaping functions to the Agent.
-# On each step, the environment will run the base observations, rewards, actions through your functions to returning the transformed results
 agent = Agent(
     interface=AgentInterface.from_type(AgentType.Standard, max_episode_steps=1000),
-    # policy=ModelPolicy(str(model_path.absolute()), OBSERVATION_SPACE,),
+    policy=Policy(model_path),
     observation_space=OBSERVATION_SPACE,
     action_space=ACTION_SPACE,
     observation_adapter=observation_adapter,
     reward_adapter=reward_adapter,
     action_adapter=action_adapter,
 )
-
-```
-
-## Dataset
-
-Alongside the starter kit a public dataset is available on CodaLab. It’s up to you how to split this dataset up for training, testing, etc. Some or all of the following scenarios may be provided,
-
-`3lane` will be provided inbuilt into the starter kit
-
-* `1lane` - the simplest scenario, a one-lane loop
-* `1lane_sharp` - a one-lane loop, with sharp curvature
-* `2lane_sharp` - a two-lane loop with sharp curvature
-* `3lane` - a simple three-lane loop
-* `3lane_bwd_b` - a simple three-lane loop going backwards with a different shape than `3lane`
-* `3lane_sharp` - a three-lane loop with sharp curvature
-* `3lane_sharp_bwd_b` - a three-lane loop with sharp curvature, going backwards, and a different shape than `3lane-sharp`
-
-In addition to these scenarios you can set the max step length and the random number generator seed in the `run.py` script. Consider also how you can introduce episodes (looping after environment returns done) to continue training for longer periods of time. The environment returns `done` when the agent is off road, gets into an accident, or hits the max step length. All these params together will allow you to build larger more varied datasets.
-
-## Evaluation
-
-When you submit your solution we’ll put it through a similar evaluation to your local `run.py script`. However we’ll be evaluating it across a different set of scenarios with varying numbers of social vehicles. We also run with a different seed, max step count, and episode count.
-
-## Submission Process
-
-When you’re happy with your solution and ready to submit you’ll want to zip your policy (and any associated files) and upload to CodaLab under “Participate > Submit/View Files”. Important: zip together just the files, not a directory with the files in it. Be careful to make sure your solutions run locally, and perform well before submitting as the upload limit is fixed.
-
-Your example submission zip dir structure can be like this:
-```python
-- agent.py # defines agent so that codalab evaluation will import like from agent import agent
-- model/ # stores training model so that policy class in agent.py will restore from it.
 ```
 
 
-### Leaderboard
+### 5.3 Leaderboard
 
-If your solution succeeds it will automatically get posted to the CodaLab leaderboard under the results tab. You’ll see your score across all the evaluation scenarios and a final rank score which is the sum of them all. This is the score in which the winners will be chosen from.
+If your solution succeeds it will automatically get posted to the CodaLab leaderboard under the results tab. You will see your score across all the evaluation scenarios and a final rank score which is the sum of them all. This is the score based on which the winners will be chosen.
 
-## Appendix
-
-### Visualization
-
-We add built-in support for [Visdom](https://github.com/facebookresearch/visdom) so you can see the image-based observation outputs in real-time. Start the visdom server before running your scenario and open the server URL in your browser `http://localhost:8097`.
-
-```bash
-# (optional) source your virtual environment
-cd ~/src/starter_kit
-source .venv/bin/activate
-
-# install visdom
-pip install visdom
-
-# start the server
-visdom
-```
-
-In your `run.py` script enable `visdom` with,
-
-```python
-env = gym.make(
-        "smarts.env:hiway-v0", # env entry name
-        ...
-        visdom=True, # whether or not to enable visdom visualization (see Appendix).
-        ...
-    )
-```
-
-A new visual tool called **envision** will also be made easily available shortly to allow you observe car behaviour in the browser.
+## 6. Frequently Asked Questions
+see [Frequently Asked Questions](doc/sections/FAQ.md)

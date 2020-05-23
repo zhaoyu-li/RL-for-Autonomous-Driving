@@ -15,7 +15,7 @@ The `supervisord.conf` file contains,
 # command=python random_example/run.py
 # ...
 # [program:envision_server]
-# command=python envision/server.py --scenarios ./dataset_public --port 8081
+# command=envision_server --scenarios ./dataset_public --port 8081
 # ...
 ```
 

@@ -56,6 +56,6 @@ To enrich your training datasets, you can edit your own map through [SUMO's NETE
 And if you have an additional file you wish to turn into a map you can use the conversion utility `sumo2mesh.py` like this:
 
 ```bash
-  python3 smarts/sstudio/sumo2mesh.py dataset_public/2lane_sharp/map.net.xml dataset_public/2lane_sharp/map.glb --format=glb
-  python3 smarts/sstudio/sumo2mesh.py dataset_public/2lane_sharp/map.net.xml dataset_public/2lane_sharp/map.egg --format=egg
+  python3 -m smarts.sstudio.sumo2mesh dataset_public/2lane_sharp/map.net.xml dataset_public/2lane_sharp/map.glb --format=glb
+  python3 -m smarts.sstudio.sumo2mesh dataset_public/2lane_sharp/map.net.xml dataset_public/2lane_sharp/map.egg --format=egg
 ```
