@@ -67,17 +67,17 @@ def main(args):
 
     # Another example to train on multi maps
     # train each worker with different environmental setting
-    class MultiEnv(RLlibHiWayEnv):
-        def __init__(self, env_config):
-            env_config["sumo_scenarios"] = [scenario_paths[(env_config.worker_index - 1) % len(scenario_paths)]]
-            super(MultiEnv, self).__init__(config=env_config)
+    # class MultiEnv(RLlibHiWayEnv):
+    #     def __init__(self, env_config):
+    #         env_config["sumo_scenarios"] = [scenario_paths[(env_config.worker_index - 1) % len(scenario_paths)]]
+    #         super(MultiEnv, self).__init__(config=env_config)
 
 
 
     smarts.core.seed(args.seed)
     tune_config = {
-        "env": MultiEnv,
-        # "env": RLlibHiWayEnv,
+        # "env": MultiEnv,
+        "env": RLlibHiWayEnv,
         "log_level": "WARN",
         "num_workers": args.num_workers,
         "env_config": {
@@ -92,7 +92,6 @@ def main(args):
             "on_episode_step": on_episode_step,
             "on_episode_end": on_episode_end,
         },
-        "horizon": args.horizon,
         "lr": 1e-4,
         "num_sgd_iter": 10,
         "lambda": 0.95,
@@ -156,9 +155,8 @@ if __name__ == "__main__":
         "--num_agents", type=int, default=1, help="Number of agents (one per policy)"
     )
     parser.add_argument(
-        "--num_workers", type=int, default=5, help="Number of workers used to sample"
+        "--num_workers", type=int, default=4, help="Number of workers used to sample"
     )
-    parser.add_argument("--horizon", type=int, default=2000, help="max episode len")
     parser.add_argument(
         "--resume_training",
         default=False,

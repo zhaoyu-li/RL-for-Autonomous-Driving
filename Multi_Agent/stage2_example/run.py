@@ -21,8 +21,8 @@ def main():
         "smarts.env:hiway-v0",
         scenarios=scenario_paths,
         agents={AGENT_ID: agent},
-        headless=False,
-        visdom=True,
+        headless=True,
+        visdom=False,
         seed=42,
     )
 
