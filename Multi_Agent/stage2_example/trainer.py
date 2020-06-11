@@ -69,10 +69,8 @@ def main(args):
     # train each worker with different environmental setting
     # class MultiEnv(RLlibHiWayEnv):
     #     def __init__(self, env_config):
-    #         env_config["sumo_scenarios"] = [scenario_paths[(env_config.worker_index - 1) % len(scenario_paths)]]
+    #         env_config["scenarios"] = [scenario_paths[(env_config.worker_index - 1) % len(scenario_paths)]]
     #         super(MultiEnv, self).__init__(config=env_config)
-
-
 
     smarts.core.seed(args.seed)
     tune_config = {

@@ -163,4 +163,3 @@ def _ego_ttc_calc(ego_lane_index, ttc_by_path, lane_dist_by_path):
         ego_ttc[1] = ttc_by_path[ego_lane_index - 1]
         ego_lane_dist[1] = lane_dist_by_path[ego_lane_index - 1]
     return ego_ttc, ego_lane_dist
-

@@ -9,8 +9,15 @@ from ray.rllib.models import ModelCatalog
 from ray.rllib.models.tf.fcnet_v2 import FullyConnectedNetwork
 from ray.rllib.utils import try_import_tf
 
-from smarts.core.agent_interface import AgentInterface, AgentType
 from smarts.env.agent import Agent, AgentPolicy
+from smarts.core.controllers import ActionSpaceType
+from smarts.core.agent_interface import (
+    AgentInterface,
+    AgentType,
+    OGM,
+    Waypoints,
+    NeighborhoodVehicles,
+)
 from custom_observations import lane_ttc_observation_adapter
 
 tf = try_import_tf()
@@ -68,7 +75,7 @@ ModelCatalog.register_custom_model(TrainingModel.NAME, TrainingModel)
 #########################################
 class RLlibTFCheckpointPolicy(AgentPolicy):
     def __init__(
-            self, load_path, algorithm, policy_name, observation_space, action_space
+        self, load_path, algorithm, policy_name, observation_space, action_space
     ):
         self._load_path = load_path
         self._algorithm = algorithm
@@ -227,6 +234,19 @@ model_path = Path(__file__).parent / "model"
 #########################################
 # continous action space agent
 #########################################
+# custom agent interface example
+"""
+agent_interface = AgentInterface(
+    max_episode_steps=None,
+    waypoints=True,
+    neighborhood_vehicles=NeighborhoodVehicles(100),
+    ogm=OGM(64, 64, 0.25),
+    rgb=False,
+    lidar=False,
+    action=ActionSpaceType.Continuous,
+)
+"""
+
 agent = Agent(
     interface=AgentInterface.from_type(
         AgentType.StandardWithAbsoluteSteering, max_episode_steps=2000
@@ -270,5 +290,5 @@ class KeeplanePolicy(AgentPolicy):
 
 keeplane_agent = Agent(
     interface=AgentInterface.from_type(AgentType.Laner, max_episode_steps=2000),
-    policy=KeeplanePolicy()
+    policy=KeeplanePolicy(),
 )
