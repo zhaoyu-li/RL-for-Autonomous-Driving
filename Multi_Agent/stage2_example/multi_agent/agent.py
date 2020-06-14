@@ -5,20 +5,17 @@ from pathlib import Path
 
 import gym
 import numpy as np
+from custom_observations import lane_ttc_observation_adapter
 from ray.rllib.models import ModelCatalog
 from ray.rllib.models.tf.fcnet_v2 import FullyConnectedNetwork
 from ray.rllib.utils import try_import_tf
 
-from smarts.env.agent import Agent, AgentPolicy
-from smarts.core.controllers import ActionSpaceType
 from smarts.core.agent_interface import (
     AgentInterface,
     AgentType,
-    OGM,
-    Waypoints,
-    NeighborhoodVehicles,
 )
-from custom_observations import lane_ttc_observation_adapter
+from smarts.core.controllers import ActionSpaceType
+from smarts.env.agent import Agent, AgentPolicy
 
 tf = try_import_tf()
 
@@ -269,7 +266,7 @@ agent = Agent(
 """
 agent = Agent(
     interface=AgentInterface.from_type(
-        AgentType.StandardWithAbsoluteSteering, max_episode_steps=2000
+        AgentType.Laner, max_episode_steps=2000
     ),
     policy=RLlibModelPolicy(str(model_path.absolute()), OBSERVATION_SPACE, ),
     # policy=RLlibTFCheckpointPolicy(str(model_path.absolute()), "PPO",   "default_policy", OBSERVATION_SPACE, ACTION_SPACE),
@@ -281,14 +278,3 @@ agent = Agent(
     action_adapter=action_adapter,
 )
 """
-
-
-class KeeplanePolicy(AgentPolicy):
-    def act(self, obs):
-        return "keep_lane"
-
-
-keeplane_agent = Agent(
-    interface=AgentInterface.from_type(AgentType.Laner, max_episode_steps=2000),
-    policy=KeeplanePolicy(),
-)

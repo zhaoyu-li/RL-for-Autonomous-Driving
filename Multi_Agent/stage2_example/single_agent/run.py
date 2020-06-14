@@ -2,11 +2,11 @@
 import os
 import gym
 from pathlib import Path
-from agent import agent, keeplane_agent
+from agent import agent
 from smarts.core import scenario
 
 
-scenario_dir = (Path(__file__).parent / "../f1_public").resolve()
+scenario_dir = (Path(__file__).parent / "f1_public").resolve()
 scenario_names = ["shanghai", "silverstone", "monte", "interlagos"]
 scenario_paths = [scenario_dir / name for name in scenario_names]
 
@@ -15,12 +15,11 @@ AGENT_ID = "Agent-007"
 
 def main():
 
-    agent = keeplane_agent
-
     env = gym.make(
         "smarts.env:hiway-v0",
         scenarios=scenario_paths,
         agents={AGENT_ID: agent},
+        # set headless to false if u want to use envision
         headless=True,
         visdom=False,
         seed=42,

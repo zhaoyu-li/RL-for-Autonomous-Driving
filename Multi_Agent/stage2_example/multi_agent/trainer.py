@@ -15,7 +15,7 @@ from agent import agent, TrainingModel
 
 
 # Path to the scenario to test
-scenario_dir = (Path(__file__).parent / "../f1_public").resolve()
+scenario_dir = (Path(__file__).parent / "f1_public").resolve()
 scenario_names = ["shanghai", "silverstone", "monte", "interlagos"]
 scenario_paths = [scenario_dir / name for name in scenario_names]
 

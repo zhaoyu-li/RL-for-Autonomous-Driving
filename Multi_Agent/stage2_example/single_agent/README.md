@@ -15,3 +15,8 @@
     - add two training example to train on multi maps. 
     
 
+# Suggest step:
+copy `f1_public` to `single_agent`
+- run `scenario.py` to generate social vehicles
+- run `trainer.py` to train agents
+- run `run.py` to evaluate agents
